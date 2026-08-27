@@ -1,0 +1,83 @@
+services:
+  postgres-home:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: home_db
+      POSTGRES_USER: ecommerce
+      POSTGRES_PASSWORD: ecommerce
+    ports: ["5433:5432"]
+
+  postgres-product:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: product_db
+      POSTGRES_USER: ecommerce
+      POSTGRES_PASSWORD: ecommerce
+    ports: ["5434:5432"]
+
+  postgres-cart:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: cart_db
+      POSTGRES_USER: ecommerce
+      POSTGRES_PASSWORD: ecommerce
+    ports: ["5435:5432"]
+
+  postgres-order:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: order_db
+      POSTGRES_USER: ecommerce
+      POSTGRES_PASSWORD: ecommerce
+    ports: ["5436:5432"]
+
+  postgres-payment:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: payment_db
+      POSTGRES_USER: ecommerce
+      POSTGRES_PASSWORD: ecommerce
+    ports: ["5437:5432"]
+
+  api-gateway:
+    build: ./backend/api-gateway
+    ports: ["8080:8080"]
+    depends_on:
+      - home-service
+      - product-service
+      - cart-service
+      - order-service
+      - payment-service
+
+  home-service:
+    build: ./backend/home-service
+    ports: ["8081:8081"]
+    depends_on: [postgres-home]
+
+  product-service:
+    build: ./backend/product-service
+    ports: ["8082:8082"]
+    depends_on: [postgres-product]
+    environment:
+      AZURE_STORAGE_CONNECTION_STRING: ${AZURE_STORAGE_CONNECTION_STRING:-}
+      AZURE_STORAGE_CONTAINER: ${AZURE_STORAGE_CONTAINER:-product-images}
+
+  cart-service:
+    build: ./backend/cart-service
+    ports: ["8083:8083"]
+    depends_on: [postgres-cart]
+
+  order-service:
+    build: ./backend/order-service
+    ports: ["8084:8084"]
+    depends_on: [postgres-order]
+
+  payment-service:
+    build: ./backend/payment-service
+    ports: ["8085:8085"]
+    depends_on: [postgres-payment]
+
+  frontend:
+    build: ./frontend
+    ports: ["5173:5173"]
+    depends_on: [api-gateway]

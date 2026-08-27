@@ -1,0 +1,23 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: home
+          uri: http://home-service:8081
+          predicates: [Path=/api/home/**]
+        - id: products
+          uri: http://product-service:8082
+          predicates: [Path=/api/products/**]
+        - id: cart
+          uri: http://cart-service:8083
+          predicates: [Path=/api/cart/**]
+        - id: orders
+          uri: http://order-service:8084
+          predicates: [Path=/api/orders/**]
+        - id: payments
+          uri: http://payment-service:8085
+          predicates: [Path=/api/payments/**]

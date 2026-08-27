@@ -1,0 +1,13 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: home-service
+  datasource:
+    url: jdbc:postgresql://localhost:5433/home_db
+    username: ecommerce
+    password: ecommerce
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false

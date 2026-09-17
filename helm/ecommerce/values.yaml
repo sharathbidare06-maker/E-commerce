@@ -1,0 +1,72 @@
+imageRegistry: ""
+imageTag: latest
+imagePullPolicy: IfNotPresent
+existingSecret: ""
+service:
+  type: ClusterIP
+
+services:
+  api-gateway:
+    image: ecommerce/api-gateway
+    port: 8080
+    replicas: 1
+  auth-service:
+    image: ecommerce/auth-service
+    port: 8087
+    replicas: 1
+    env:
+      DB_HOST: postgres-auth
+      DB_PORT: "5432"
+  home-service:
+    image: ecommerce/home-service
+    port: 8081
+    replicas: 1
+    env:
+      DB_HOST: postgres-home
+      DB_PORT: "5432"
+  product-service:
+    image: ecommerce/product-service
+    port: 8082
+    replicas: 1
+    env:
+      DB_HOST: postgres-product
+      DB_PORT: "5432"
+  cart-service:
+    image: ecommerce/cart-service
+    port: 8083
+    replicas: 1
+    env:
+      DB_HOST: postgres-cart
+      DB_PORT: "5432"
+  order-service:
+    image: ecommerce/order-service
+    port: 8084
+    replicas: 1
+    env:
+      DB_HOST: postgres-order
+      DB_PORT: "5432"
+  payment-service:
+    image: ecommerce/payment-service
+    port: 8085
+    replicas: 1
+    env:
+      DB_HOST: postgres-payment
+      DB_PORT: "5432"
+  shipping-service:
+    image: ecommerce/shipping-service
+    port: 8086
+    replicas: 1
+    env:
+      DB_HOST: postgres-shipping
+      DB_PORT: "5432"
+  review-service:
+    image: ecommerce/review-service
+    port: 8088
+    replicas: 1
+    env:
+      DB_HOST: postgres-review
+      DB_PORT: "5432"
+  frontend:
+    image: ecommerce/frontend
+    port: 5173
+    replicas: 1

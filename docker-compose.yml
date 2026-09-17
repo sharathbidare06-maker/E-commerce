@@ -6,6 +6,8 @@ services:
       POSTGRES_USER: ecommerce
       POSTGRES_PASSWORD: ecommerce
     ports: ["5433:5432"]
+    volumes:
+      - postgres-home-data:/var/lib/postgresql/data
 
   postgres-product:
     image: postgres:16
@@ -14,6 +16,9 @@ services:
       POSTGRES_USER: ecommerce
       POSTGRES_PASSWORD: ecommerce
     ports: ["5434:5432"]
+    volumes:
+      - ./db/product/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - postgres-product-data:/var/lib/postgresql/data
 
   postgres-cart:
     image: postgres:16
@@ -22,6 +27,8 @@ services:
       POSTGRES_USER: ecommerce
       POSTGRES_PASSWORD: ecommerce
     ports: ["5435:5432"]
+    volumes:
+      - postgres-cart-data:/var/lib/postgresql/data
 
   postgres-order:
     image: postgres:16
@@ -30,6 +37,8 @@ services:
       POSTGRES_USER: ecommerce
       POSTGRES_PASSWORD: ecommerce
     ports: ["5436:5432"]
+    volumes:
+      - postgres-order-data:/var/lib/postgresql/data
 
   postgres-payment:
     image: postgres:16
@@ -38,9 +47,43 @@ services:
       POSTGRES_USER: ecommerce
       POSTGRES_PASSWORD: ecommerce
     ports: ["5437:5432"]
+    volumes:
+      - postgres-payment-data:/var/lib/postgresql/data
+
+  postgres-shipping:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: shipping_db
+      POSTGRES_USER: ecommerce
+      POSTGRES_PASSWORD: ecommerce
+    ports: ["5438:5432"]
+    volumes:
+      - postgres-shipping-data:/var/lib/postgresql/data
+
+  postgres-auth:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: ecommerce
+      POSTGRES_PASSWORD: ecommerce
+    ports: ["5439:5432"]
+    volumes:
+      - postgres-auth-data:/var/lib/postgresql/data
+
+  postgres-review:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: review_db
+      POSTGRES_USER: ecommerce
+      POSTGRES_PASSWORD: ecommerce
+    ports: ["5440:5432"]
+    volumes:
+      - postgres-review-data:/var/lib/postgresql/data
 
   api-gateway:
-    build: ./backend/api-gateway
+    build:
+      context: ./backend
+      dockerfile: api-gateway/Dockerfile
     ports: ["8080:8080"]
     depends_on:
       - home-service
@@ -48,36 +91,100 @@ services:
       - cart-service
       - order-service
       - payment-service
+      - review-service
+      - auth-service
+
+  auth-service:
+    build:
+      context: ./backend
+      dockerfile: auth-service/Dockerfile
+    depends_on: [postgres-auth]
+    environment:
+      DB_HOST: postgres-auth
+      DB_PORT: 5432
+      JWT_SECRET: ${JWT_SECRET:-change-this-development-secret-to-a-long-random-value-32}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_SIGNUP_CODE: ${ADMIN_SIGNUP_CODE:-}
 
   home-service:
-    build: ./backend/home-service
-    ports: ["8081:8081"]
+    build:
+      context: ./backend
+      dockerfile: home-service/Dockerfile
     depends_on: [postgres-home]
+    environment:
+      DB_HOST: postgres-home
+      DB_PORT: 5432
 
   product-service:
-    build: ./backend/product-service
-    ports: ["8082:8082"]
+    build:
+      context: ./backend
+      dockerfile: product-service/Dockerfile
     depends_on: [postgres-product]
     environment:
+      DB_HOST: postgres-product
+      DB_PORT: 5432
       AZURE_STORAGE_CONNECTION_STRING: ${AZURE_STORAGE_CONNECTION_STRING:-}
       AZURE_STORAGE_CONTAINER: ${AZURE_STORAGE_CONTAINER:-product-images}
 
   cart-service:
-    build: ./backend/cart-service
-    ports: ["8083:8083"]
+    build:
+      context: ./backend
+      dockerfile: cart-service/Dockerfile
     depends_on: [postgres-cart]
+    environment:
+      DB_HOST: postgres-cart
+      DB_PORT: 5432
 
   order-service:
-    build: ./backend/order-service
-    ports: ["8084:8084"]
+    build:
+      context: ./backend
+      dockerfile: order-service/Dockerfile
     depends_on: [postgres-order]
+    environment:
+      DB_HOST: postgres-order
+      DB_PORT: 5432
 
   payment-service:
-    build: ./backend/payment-service
-    ports: ["8085:8085"]
+    build:
+      context: ./backend
+      dockerfile: payment-service/Dockerfile
     depends_on: [postgres-payment]
+    environment:
+      DB_HOST: postgres-payment
+      DB_PORT: 5432
+
+  shipping-service:
+    build:
+      context: ./backend
+      dockerfile: shipping-service/Dockerfile
+    depends_on:
+      - payment-service
+      - postgres-shipping
+    environment:
+      DB_HOST: postgres-shipping
+      DB_PORT: 5432
+
+  review-service:
+    build:
+      context: ./backend
+      dockerfile: review-service/Dockerfile
+    depends_on: [postgres-review]
+    environment:
+      DB_HOST: postgres-review
+      DB_PORT: 5432
 
   frontend:
     build: ./frontend
     ports: ["5173:5173"]
     depends_on: [api-gateway]
+
+volumes:
+  postgres-home-data:
+  postgres-product-data:
+  postgres-cart-data:
+  postgres-order-data:
+  postgres-payment-data:
+  postgres-shipping-data:
+  postgres-auth-data:
+  postgres-review-data:

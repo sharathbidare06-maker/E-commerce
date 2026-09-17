@@ -4,6 +4,14 @@ spring:
   application:
     name: api-gateway
   cloud:
+    globalcors:
+      add-to-simple-url-handler-mapping: true
+      cors-configurations:
+        '[/**]':
+          allowedOrigins: "http://localhost:5173"
+          allowedMethods: "GET,POST,PUT,DELETE,OPTIONS"
+          allowedHeaders: "*"
+          allowCredentials: false
     gateway:
       routes:
         - id: home
@@ -12,12 +20,30 @@ spring:
         - id: products
           uri: http://product-service:8082
           predicates: [Path=/api/products/**]
+        - id: product-stream
+          uri: http://product-service:8082
+          predicates: [Path=/api/products/stream]
         - id: cart
           uri: http://cart-service:8083
           predicates: [Path=/api/cart/**]
         - id: orders
           uri: http://order-service:8084
           predicates: [Path=/api/orders/**]
+        - id: order-stream
+          uri: http://order-service:8084
+          predicates: [Path=/api/orders/stream]
         - id: payments
           uri: http://payment-service:8085
           predicates: [Path=/api/payments/**]
+        - id: shipping
+          uri: http://shipping-service:8086
+          predicates: [Path=/api/shipping/**]
+        - id: reviews
+          uri: http://review-service:8088
+          predicates: [Path=/api/reviews/**]
+        - id: auth
+          uri: http://auth-service:8087
+          predicates: [Path=/api/auth/**]
+security:
+  jwt:
+    secret: ${JWT_SECRET:change-this-development-secret-to-a-long-random-value-32}

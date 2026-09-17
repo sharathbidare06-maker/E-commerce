@@ -4,7 +4,7 @@ spring:
   application:
     name: home-service
   datasource:
-    url: jdbc:postgresql://localhost:5433/home_db
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5433}/home_db
     username: ecommerce
     password: ecommerce
   jpa:

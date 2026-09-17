@@ -1,0 +1,20 @@
+server:
+  port: 8087
+spring:
+  application:
+    name: auth-service
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5439}/auth_db
+    username: ecommerce
+    password: ecommerce
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+security:
+  jwt:
+    secret: ${JWT_SECRET:change-this-development-secret-to-a-long-random-value-32}
+  admin:
+    email: ${ADMIN_EMAIL:}
+    password: ${ADMIN_PASSWORD:}
+    signup-code: ${ADMIN_SIGNUP_CODE:}

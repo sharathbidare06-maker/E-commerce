@@ -1,0 +1,13 @@
+server:
+  port: 8088
+spring:
+  application:
+    name: review-service
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5440}/review_db
+    username: ecommerce
+    password: ecommerce
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false

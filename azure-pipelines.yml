@@ -1,0 +1,172 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  nodeVersion: '20.x'
+  javaVersion: '21'
+  azureServiceConnection: 'replace-with-azure-service-connection'
+  acrName: 'replace-with-acr-name'
+  aksResourceGroup: 'replace-with-aks-resource-group'
+  aksClusterName: 'replace-with-aks-cluster-name'
+  imageTag: '$(Build.BuildId)'
+
+stages:
+  - stage: Build
+    displayName: Build and test
+    jobs:
+      - job: BuildJob
+        displayName: Build job
+        steps:
+          - checkout: self
+          - task: JavaToolInstaller@0
+            displayName: Use Java $(javaVersion)
+            inputs:
+              versionSpec: '$(javaVersion)'
+              jdkArchitectureOption: x64
+              jdkSourceOption: PreInstalled
+          - script: mvn -B -f backend/pom.xml clean verify
+            displayName: Build and test backend
+          - task: NodeTool@0
+            displayName: Use Node.js $(nodeVersion)
+            inputs:
+              versionSpec: '$(nodeVersion)'
+          - script: |
+              npm ci
+              npm test -- --run
+              npm run build
+            workingDirectory: frontend
+            displayName: Build and test frontend
+
+  - stage: Images
+    displayName: Build and push images to ACR
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+      - job: BuildImages
+        displayName: Build images with ACR Tasks
+        steps:
+          - checkout: self
+          - task: AzureCLI@2
+            displayName: Build and push images
+            inputs:
+              azureSubscription: '$(azureServiceConnection)'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                set -euo pipefail
+                services=(api-gateway auth-service home-service product-service cart-service order-service payment-service shipping-service review-service)
+                for service in "${services[@]}"; do
+                  az acr build \
+                    --registry "$(acrName)" \
+                    --image "ecommerce/${service}:$(imageTag)" \
+                    --file "${service}/Dockerfile" \
+                    backend
+                done
+                az acr build \
+                  --registry "$(acrName)" \
+                  --image "ecommerce/frontend:$(imageTag)" \
+                  --file Dockerfile \
+                  frontend
+
+  - stage: QA
+    displayName: Deploy to QA AKS
+    dependsOn: Images
+    condition: succeeded()
+    variables:
+      environmentName: qa
+      namespace: ecommerce-qa
+    jobs:
+      - deployment: DeployQA
+        displayName: QA AKS deployment
+        environment: ecommerce-qa
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                - task: AzureCLI@2
+                  displayName: Deploy to QA AKS
+                  inputs:
+                    azureSubscription: '$(azureServiceConnection)'
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      set -euo pipefail
+                      az aks get-credentials \
+                        --resource-group "$(aksResourceGroup)" \
+                        --name "$(aksClusterName)" \
+                        --overwrite-existing
+                      kubectl create namespace "$(namespace)" --dry-run=client -o yaml | kubectl apply -f -
+                      kubectl apply -n "$(namespace)" -f "k8s/$(environmentName)"
+
+  - stage: UAT
+    displayName: Deploy to UAT AKS
+    dependsOn: QA
+    condition: succeeded()
+    variables:
+      environmentName: uat
+      namespace: ecommerce-uat
+    jobs:
+      - deployment: DeployUAT
+        displayName: UAT AKS deployment
+        environment: ecommerce-uat
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                - task: AzureCLI@2
+                  displayName: Deploy to UAT AKS
+                  inputs:
+                    azureSubscription: '$(azureServiceConnection)'
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      set -euo pipefail
+                      az aks get-credentials \
+                        --resource-group "$(aksResourceGroup)" \
+                        --name "$(aksClusterName)" \
+                        --overwrite-existing
+                      kubectl create namespace "$(namespace)" --dry-run=client -o yaml | kubectl apply -f -
+                      kubectl apply -n "$(namespace)" -f "k8s/$(environmentName)"
+
+  - stage: PROD
+    displayName: Deploy to production AKS
+    dependsOn: UAT
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    variables:
+      environmentName: prod
+      namespace: ecommerce-prod
+    jobs:
+      - deployment: DeployPROD
+        displayName: Production AKS deployment
+        environment: ecommerce-prod
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                - task: AzureCLI@2
+                  displayName: Deploy to production AKS
+                  inputs:
+                    azureSubscription: '$(azureServiceConnection)'
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      set -euo pipefail
+                      az aks get-credentials \
+                        --resource-group "$(aksResourceGroup)" \
+                        --name "$(aksClusterName)" \
+                        --overwrite-existing
+                      kubectl create namespace "$(namespace)" --dry-run=client -o yaml | kubectl apply -f -
+                      kubectl apply -n "$(namespace)" -f "k8s/$(environmentName)"

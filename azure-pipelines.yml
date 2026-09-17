@@ -14,7 +14,6 @@ pool:
 variables:
   nodeVersion: '20.x'
   javaVersion: '21'
-  azureServiceConnection: 'replace-with-azure-service-connection'
   acrName: 'replace-with-acr-name'
   aksResourceGroup: 'replace-with-aks-resource-group'
   aksClusterName: 'replace-with-aks-cluster-name'
@@ -94,6 +93,10 @@ stages:
             deploy:
               steps:
                 - checkout: self
+                - task: HelmInstaller@1
+                  displayName: Install Helm
+                  inputs:
+                    helmVersionToInstall: latest
                 - task: AzureCLI@2
                   displayName: Deploy to QA AKS
                   inputs:
@@ -106,8 +109,15 @@ stages:
                         --resource-group "$(aksResourceGroup)" \
                         --name "$(aksClusterName)" \
                         --overwrite-existing
-                      kubectl create namespace "$(namespace)" --dry-run=client -o yaml | kubectl apply -f -
-                      kubectl apply -n "$(namespace)" -f "k8s/$(environmentName)"
+                      helm upgrade --install ecommerce ./helm/ecommerce \
+                        --namespace "$(namespace)" \
+                        --create-namespace \
+                        --values "./helm/ecommerce/environments/$(environmentName).yaml" \
+                        --set imageRegistry="$(acrName).azurecr.io" \
+                        --set imageTag="$(imageTag)" \
+                        --set existingSecret="$(k8sSecretName)" \
+                        --wait \
+                        --timeout 10m
 
   - stage: UAT
     displayName: Deploy to UAT AKS
@@ -125,6 +135,10 @@ stages:
             deploy:
               steps:
                 - checkout: self
+                - task: HelmInstaller@1
+                  displayName: Install Helm
+                  inputs:
+                    helmVersionToInstall: latest
                 - task: AzureCLI@2
                   displayName: Deploy to UAT AKS
                   inputs:
@@ -137,8 +151,15 @@ stages:
                         --resource-group "$(aksResourceGroup)" \
                         --name "$(aksClusterName)" \
                         --overwrite-existing
-                      kubectl create namespace "$(namespace)" --dry-run=client -o yaml | kubectl apply -f -
-                      kubectl apply -n "$(namespace)" -f "k8s/$(environmentName)"
+                      helm upgrade --install ecommerce ./helm/ecommerce \
+                        --namespace "$(namespace)" \
+                        --create-namespace \
+                        --values "./helm/ecommerce/environments/$(environmentName).yaml" \
+                        --set imageRegistry="$(acrName).azurecr.io" \
+                        --set imageTag="$(imageTag)" \
+                        --set existingSecret="$(k8sSecretName)" \
+                        --wait \
+                        --timeout 10m
 
   - stage: PROD
     displayName: Deploy to production AKS
@@ -156,6 +177,10 @@ stages:
             deploy:
               steps:
                 - checkout: self
+                - task: HelmInstaller@1
+                  displayName: Install Helm
+                  inputs:
+                    helmVersionToInstall: latest
                 - task: AzureCLI@2
                   displayName: Deploy to production AKS
                   inputs:
@@ -168,5 +193,12 @@ stages:
                         --resource-group "$(aksResourceGroup)" \
                         --name "$(aksClusterName)" \
                         --overwrite-existing
-                      kubectl create namespace "$(namespace)" --dry-run=client -o yaml | kubectl apply -f -
-                      kubectl apply -n "$(namespace)" -f "k8s/$(environmentName)"
+                      helm upgrade --install ecommerce ./helm/ecommerce \
+                        --namespace "$(namespace)" \
+                        --create-namespace \
+                        --values "./helm/ecommerce/environments/$(environmentName).yaml" \
+                        --set imageRegistry="$(acrName).azurecr.io" \
+                        --set imageTag="$(imageTag)" \
+                        --set existingSecret="$(k8sSecretName)" \
+                        --wait \
+                        --timeout 10m

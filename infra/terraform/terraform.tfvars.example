@@ -1,0 +1,9 @@
+subscription_id             = "00000000-0000-0000-0000-000000000000"
+location                     = "eastus"
+environment                  = "qa"
+name_prefix                 = "ecommerce"
+aks_node_count              = 2
+aks_vm_size                 = "Standard_D2s_v5"
+postgres_admin_username     = "ecommerceadmin"
+postgres_admin_password     = "replace-with-a-secret-password"
+jwt_secret                  = "replace-with-a-long-random-jwt-secret"

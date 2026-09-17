@@ -5,3 +5,7 @@ dist/
 .idea/
 .vscode/
 *.log
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars

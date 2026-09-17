@@ -8,7 +8,7 @@ metadata:
     {{- include "ecommerce.labels" $ | nindent 4 }}
     app.kubernetes.io/component: {{ $name }}
 spec:
-  type: {{ $.Values.service.type }}
+  type: {{ $service.type | default $.Values.service.type }}
   selector:
     app.kubernetes.io/instance: {{ $.Release.Name }}
     app.kubernetes.io/component: {{ $name }}

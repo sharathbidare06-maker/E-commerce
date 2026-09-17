@@ -133,7 +133,7 @@ Images are tagged with the Azure DevOps build ID. The same tag is promoted throu
 
 ### Required pipeline variables
 
-Replace the placeholder values in `azure-pipelines.yml` or configure them as Azure DevOps variables:
+Configure these as Azure DevOps pipeline variables or, preferably, in a linked variable group. `azureServiceConnection` must exactly match an enabled Azure Resource Manager service connection authorized for this pipeline:
 
 ```yaml
 azureServiceConnection: 'your-azure-service-connection'

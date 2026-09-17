@@ -70,3 +70,4 @@ services:
     image: ecommerce/frontend
     port: 5173
     replicas: 1
+    type: LoadBalancer

@@ -30,8 +30,9 @@ azureServiceConnection  # exact Azure DevOps service connection name
 acrName                 # Terraform ACR name
 aksResourceGroup        # Terraform resource group output
 aksClusterName          # Terraform AKS name output
-postgresHost            # Terraform postgres_fqdn output
-k8sSecretName           # existing Kubernetes Secret containing runtime secrets
+postgresHostQa          # QA Terraform postgres_fqdn output
+postgresHostUat         # UAT Terraform postgres_fqdn output
+postgresHostProd        # production Terraform postgres_fqdn output
 ```
 
 The service connection needs permission to build in ACR and read credentials from AKS. Create the `ecommerce-qa`, `ecommerce-uat`, and `ecommerce-prod` Azure DevOps environments; require approvals for UAT and production.

@@ -115,8 +115,8 @@ stages:
                         --values "./helm/ecommerce/environments/$(environmentName).yaml" \
                         --set imageRegistry="$(acrName).azurecr.io" \
                         --set imageTag="$(imageTag)" \
-                        --set postgresHost="$(postgresHost)" \
-                        --set existingSecret="$(k8sSecretName)" \
+                        --set postgresHost="$(postgresHostQa)" \
+                        --set existingSecret="ecommerce-qa-secrets" \
                         --wait \
                         --timeout 10m
 
@@ -158,8 +158,8 @@ stages:
                         --values "./helm/ecommerce/environments/$(environmentName).yaml" \
                         --set imageRegistry="$(acrName).azurecr.io" \
                         --set imageTag="$(imageTag)" \
-                        --set postgresHost="$(postgresHost)" \
-                        --set existingSecret="$(k8sSecretName)" \
+                        --set postgresHost="$(postgresHostUat)" \
+                        --set existingSecret="ecommerce-uat-secrets" \
                         --wait \
                         --timeout 10m
 
@@ -201,7 +201,7 @@ stages:
                         --values "./helm/ecommerce/environments/$(environmentName).yaml" \
                         --set imageRegistry="$(acrName).azurecr.io" \
                         --set imageTag="$(imageTag)" \
-                        --set postgresHost="$(postgresHost)" \
-                        --set existingSecret="$(k8sSecretName)" \
+                        --set postgresHost="$(postgresHostProd)" \
+                        --set existingSecret="ecommerce-prod-secrets" \
                         --wait \
                         --timeout 10m

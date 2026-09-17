@@ -2,6 +2,7 @@ imageRegistry: ""
 imageTag: latest
 imagePullPolicy: IfNotPresent
 existingSecret: ""
+postgresHost: ""
 service:
   type: ClusterIP
 

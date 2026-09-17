@@ -31,7 +31,7 @@ spec:
           env:
             {{- range $key, $value := . }}
             - name: {{ $key }}
-              value: {{ $value | quote }}
+              value: {{ if and (eq $key "DB_HOST") $.Values.postgresHost }}{{ $.Values.postgresHost | quote }}{{ else }}{{ $value | quote }}{{ end }}
             {{- end }}
           {{- end }}
           {{- if $.Values.existingSecret }}

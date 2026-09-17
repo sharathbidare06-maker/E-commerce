@@ -30,6 +30,7 @@ azureServiceConnection  # exact Azure DevOps service connection name
 acrName                 # Terraform ACR name
 aksResourceGroup        # Terraform resource group output
 aksClusterName          # Terraform AKS name output
+postgresHost            # Terraform postgres_fqdn output
 k8sSecretName           # existing Kubernetes Secret containing runtime secrets
 ```
 

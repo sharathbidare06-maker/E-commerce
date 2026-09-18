@@ -8,6 +8,13 @@ pr:
     include:
       - main
 
+resources:
+  repositories:
+    - repository: k8s
+      type: git
+      name: ecommerce-k8s
+      ref: refs/heads/main
+
 pool:
   vmImage: ubuntu-latest
 
@@ -93,6 +100,7 @@ stages:
             deploy:
               steps:
                 - checkout: self
+                - checkout: k8s
                 - task: HelmInstaller@1
                   displayName: Install Helm
                   inputs:
@@ -109,10 +117,10 @@ stages:
                         --resource-group "$(aksResourceGroup)" \
                         --name "$(aksClusterName)" \
                         --overwrite-existing
-                      helm upgrade --install ecommerce ./helm/ecommerce \
+                      helm upgrade --install ecommerce "$(Build.SourcesDirectory)/k8s/helm/ecommerce" \
                         --namespace "$(namespace)" \
                         --create-namespace \
-                        --values "./helm/ecommerce/environments/$(environmentName).yaml" \
+                        --values "$(Build.SourcesDirectory)/k8s/helm/ecommerce/environments/$(environmentName).yaml" \
                         --set imageRegistry="$(acrName).azurecr.io" \
                         --set imageTag="$(imageTag)" \
                         --set postgresHost="$(postgresHostQa)" \
@@ -136,6 +144,7 @@ stages:
             deploy:
               steps:
                 - checkout: self
+                - checkout: k8s
                 - task: HelmInstaller@1
                   displayName: Install Helm
                   inputs:
@@ -152,10 +161,10 @@ stages:
                         --resource-group "$(aksResourceGroup)" \
                         --name "$(aksClusterName)" \
                         --overwrite-existing
-                      helm upgrade --install ecommerce ./helm/ecommerce \
+                      helm upgrade --install ecommerce "$(Build.SourcesDirectory)/k8s/helm/ecommerce" \
                         --namespace "$(namespace)" \
                         --create-namespace \
-                        --values "./helm/ecommerce/environments/$(environmentName).yaml" \
+                        --values "$(Build.SourcesDirectory)/k8s/helm/ecommerce/environments/$(environmentName).yaml" \
                         --set imageRegistry="$(acrName).azurecr.io" \
                         --set imageTag="$(imageTag)" \
                         --set postgresHost="$(postgresHostUat)" \
@@ -179,6 +188,7 @@ stages:
             deploy:
               steps:
                 - checkout: self
+                - checkout: k8s
                 - task: HelmInstaller@1
                   displayName: Install Helm
                   inputs:
@@ -195,10 +205,10 @@ stages:
                         --resource-group "$(aksResourceGroup)" \
                         --name "$(aksClusterName)" \
                         --overwrite-existing
-                      helm upgrade --install ecommerce ./helm/ecommerce \
+                      helm upgrade --install ecommerce "$(Build.SourcesDirectory)/k8s/helm/ecommerce" \
                         --namespace "$(namespace)" \
                         --create-namespace \
-                        --values "./helm/ecommerce/environments/$(environmentName).yaml" \
+                        --values "$(Build.SourcesDirectory)/k8s/helm/ecommerce/environments/$(environmentName).yaml" \
                         --set imageRegistry="$(acrName).azurecr.io" \
                         --set imageTag="$(imageTag)" \
                         --set postgresHost="$(postgresHostProd)" \

@@ -1,5 +1,0 @@
-imageRegistry: your-prod-acr.azurecr.io
-imageTag: "latest"
-service:
-  type: ClusterIP
-existingSecret: ecommerce-prod-secrets

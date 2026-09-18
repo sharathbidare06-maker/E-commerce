@@ -31,14 +31,18 @@ E-commerce2/
 ├── db/                            # Database bootstrap and seed data
 │   └── product/init.sql
 ├── docs/                          # Architecture, API, and operational documentation
-├── helm/ecommerce/                # Reusable Kubernetes Helm chart
-├── k8s/{qa,uat,prod}/             # Environment-specific Kubernetes overlays
-├── infra/                         # Azure and PostgreSQL infrastructure guidance
 ├── scripts/                       # Local build and developer automation
 ├── docker-compose.yml              # Local multi-service runtime
 ├── azure-pipelines.yml            # CI/CD build and promotion pipeline
 ├── .env.example                   # Non-secret environment variable template
 └── README.md                      # Project entry point and setup guide
+```
+
+Deployment configuration is maintained in separate repositories:
+
+```text
+ecommerce-k8s/                     # Helm chart and Kubernetes manifests
+ecommerce-terraform/               # Azure Terraform and infrastructure docs
 ```
 
 ## Backend service layout

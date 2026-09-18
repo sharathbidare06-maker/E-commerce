@@ -100,13 +100,12 @@ PostgreSQL data is persisted through named Docker volumes. Removing containers d
 - `backend/` contains the independently deployable Spring Boot services and their application code.
 - `db/` contains database initialization assets, such as product seed data.
 - `infra/postgres/` documents the local and production database ownership model.
-- `infra/azure/` documents Azure Blob Storage setup for product images.
 - `scripts/` contains local development helpers, such as targeted service builds.
-- `helm/ecommerce/` contains the reusable Helm chart for Kubernetes deployments, with `environments/qa.yaml`, `environments/uat.yaml`, and `environments/prod.yaml`.
-- `k8s/` is reserved for environment-specific AKS manifests (`qa`, `uat`, and `prod`).
+- `ecommerce-k8s` contains the reusable Helm chart and environment-specific AKS manifests.
+- `ecommerce-terraform` contains Azure infrastructure code and operational documentation.
 - `azure-pipelines.yml` builds the application, pushes images to ACR, and promotes the same image tag through AKS environments.
 
-`infra` is configuration and operational documentation; it is separate from business logic so local Docker, Azure resources, and AKS deployment settings can evolve without mixing them into service code.
+Infrastructure and deployment configuration live in separate repositories so Azure resources and AKS settings can evolve without mixing them into service code.
 
 ## Azure DevOps CI/CD
 
@@ -144,12 +143,14 @@ aksClusterName: 'your-aks-cluster'
 
 Do not store passwords, tokens, database credentials, or the Azure Blob connection string in the YAML file. Use Azure DevOps Variable Groups or Azure Key Vault.
 
+The pipeline also checks out the `ecommerce-k8s` Azure Repos repository. Update the `resources.repositories[].name` value in `azure-pipelines.yml` if that repository is in a different Azure DevOps project, and authorize the pipeline to read it.
+
 ### AKS manifests
 
-The deployment stages expect environment-specific Kubernetes manifests in:
+The Kubernetes repository contains the reusable Helm chart and reserves these folders for environment-specific raw manifests:
 
 ```text
-k8s/
+ecommerce-k8s/k8s/
 	qa/
 	uat/
 	prod/
@@ -162,10 +163,10 @@ Each environment folder should contain the required Deployments, Services, Confi
 The reusable Helm chart creates Deployments and ClusterIP Services for the gateway, backend services, and frontend. Use one environment values file per release and provide secrets through an existing Kubernetes Secret:
 
 ```bash
-helm upgrade --install ecommerce ./helm/ecommerce \
+helm upgrade --install ecommerce ../ecommerce-k8s/helm/ecommerce \
 	--namespace ecommerce-qa \
 	--create-namespace \
-	--values ./helm/ecommerce/environments/qa.yaml \
+	--values ../ecommerce-k8s/helm/ecommerce/environments/qa.yaml \
 	--set imageTag=your-image-tag
 ```
 

@@ -1,5 +1,0 @@
-imageRegistry: your-uat-acr.azurecr.io
-imageTag: "latest"
-service:
-  type: ClusterIP
-existingSecret: ecommerce-uat-secrets
